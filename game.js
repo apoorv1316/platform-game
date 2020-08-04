@@ -24,13 +24,16 @@ class Level {
     this.rows = rows.map((row, y) => {
       return row.map((ch, x) => {
         let type = levelChars[ch];
+        // Background elements are strings
         if (typeof type == "string") return type;
+        // Moving elements are classes
         this.startActors.push(type.create(new Vec(x, y), ch));
         return "empty";
       });
     });
   }
 }
+
 class State {
   constructor(level, actors, status) {
     this.level = level;
@@ -44,6 +47,7 @@ class State {
     return this.actors.find((a) => a.type == "player");
   }
 }
+
 class Vec {
   constructor(x, y) {
     this.x = x;
@@ -95,3 +99,34 @@ class Lava {
 }
 
 Lava.prototype.size = new Vec(1, 1);
+
+class Coin {
+  constructor(pos, basePos, wobble) {
+    this.pos = pos;
+    this.basePos = basePos;
+    this.wobble = wobble;
+  }
+
+  get type() {
+    return "coin";
+  }
+
+  static create(pos) {
+    let basePos = pos.plus(new Vec(0.2, 0.1));
+    return new Coin(basePos, basePos, Math.random() * Math.PI * 2);
+  }
+}
+
+Coin.prototype.size = new Vec(0.6, 0.6);
+
+const levelChars = {
+  ".": "empty",
+  "#": "wall",
+  "+": "lava",
+  "@": Player,
+  o: Coin,
+  "=": Lava,
+  "|": Lava,
+  v: Lava,
+};
+let simpleLevel = new Level(simpleLevelPlan);
