@@ -29,7 +29,10 @@
 }
 .game {
   overflow: hidden;
-  max-width: 600px;
-  max-height: 450px;
+  max-width: 1200px;
+  max-height: 1200px;
   position: relative;
+}
+:fullscreen {
+  background-color: red;
 }

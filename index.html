@@ -6,10 +6,27 @@
     <title>Platform game</title>
     <link rel="stylesheet" href="index.css" />
   </head>
-  <body></body>
+  <body>
+    <input type="button" value="PLAY" onclick="play()" />
+    <input type="button" value="MUTE" onclick="mute()" />
+    <input type="button" value="Enable music" onclick="unmute()" />
+    <button data-toggle-fullscreen>Toggle Fullscreen</button>
+    <audio id="audio" src="./audio.mp3"></audio>
+  </body>
   <script src="game.js"></script>
+
   <script>
-    // let simpleLevel = new Level(simpleLevelPlan);
+    var audio = document.getElementById("audio");
+    function mute() {
+      audio.muted = true;
+    }
+    function play() {
+      audio.play();
+    }
+    function unmute() {
+      audio.muted = false;
+    }
+
     let display = new DOMDisplay(document.body, simpleLevel);
     display.syncState(State.start(simpleLevel));
   </script>

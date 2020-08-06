@@ -224,3 +224,20 @@ DOMDisplay.prototype.scrollPlayerIntoView = function (state) {
     this.dom.scrollTop = center.y + margin - height;
   }
 };
+// Full screen
+document.addEventListener(
+  "click",
+  function (event) {
+    // Ignore clicks that weren't on the toggle button
+    if (!event.target.hasAttribute("data-toggle-fullscreen")) return;
+
+    // If there's an element in fullscreen, exit
+    // Otherwise, enter it
+    if (document.fullscreenElement) {
+      document.exitFullscreen();
+    } else {
+      document.documentElement.requestFullscreen();
+    }
+  },
+  false
+);
