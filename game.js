@@ -4,7 +4,7 @@ let simpleLevelPlan = `
 ..#................#..
 ..#..............=.#..
 ..#.........o.o....#..
-..#.@......#####...#..
+..#........#####...#..
 ..#####............#..
 ......#++++++++++++#..
 ......##############..
@@ -249,6 +249,7 @@ document.addEventListener(
 
 Level.prototype.touches = function (pos, size, type) {
   var xStart = Math.floor(pos.x);
+  // console.log(xStart);
   var xEnd = Math.ceil(pos.x + size.x);
   var yStart = Math.floor(pos.y);
   var yEnd = Math.ceil(pos.y + size.y);
@@ -265,6 +266,7 @@ Level.prototype.touches = function (pos, size, type) {
 
 State.prototype.update = function (time, keys) {
   let actors = this.actors.map((actor) => actor.update(time, this, keys));
+
   let newState = new State(this.level, actors, this.status);
 
   if (newState.status != "playing") return newState;
@@ -299,3 +301,120 @@ Coin.prototype.collide = function (state) {
   if (!filtered.some((a) => a.type == "coin")) status = "won";
   return new State(state.level, filtered, status);
 };
+Lava.prototype.update = function (time, state) {
+  let newPos = this.pos.plus(this.speed.times(time));
+  if (!state.level.touches(newPos, this.size, "wall")) {
+    return new Lava(newPos, this.speed, this.reset);
+  } else if (this.reset) {
+    // dripping lava has a reset position, to which it jumps back when it hits something.
+    return new Lava(this.reset, this.speed, this.reset);
+  } else {
+    // Bouncing lava inverts its speed by multiplying it by -1 so that it starts moving in the opposite direction.
+    return new Lava(this.pos, this.speed.times(-1));
+  }
+};
+const wobbleSpeed = 8,
+  wobbleDist = 0.07;
+
+Coin.prototype.update = function (time) {
+  // console.log(this.wobble);
+  let wobble = this.wobble + time * wobbleSpeed;
+  let wobblePos = Math.sin(wobble) * wobbleDist;
+  // console.log(this.basePos);
+  return new Coin(
+    this.basePos.plus(new Vec(0, wobblePos)),
+    this.basePos,
+    wobble
+  );
+};
+const playerXSpeed = 7;
+const gravity = 30;
+const jumpSpeed = 17;
+
+Player.prototype.update = function (time, state, keys) {
+  let xSpeed = 0;
+  if (keys.ArrowLeft) xSpeed -= playerXSpeed;
+  if (keys.ArrowRight) xSpeed += playerXSpeed;
+  let pos = this.pos;
+  let movedX = pos.plus(new Vec(xSpeed * time, 0));
+  if (!state.level.touches(movedX, this.size, "wall")) {
+    pos = movedX;
+  }
+
+  let ySpeed = this.speed.y + time * gravity;
+  let movedY = pos.plus(new Vec(0, ySpeed * time));
+  if (!state.level.touches(movedY, this.size, "wall")) {
+    pos = movedY;
+  } else if (keys.ArrowUp && ySpeed > 0) {
+    ySpeed = -jumpSpeed;
+  } else {
+    ySpeed = 0;
+  }
+  // console.log(new Player(pos, new Vec(xSpeed, ySpeed)));
+  return new Player(pos, new Vec(xSpeed, ySpeed));
+};
+
+function trackKeys(keys) {
+  let down = Object.create(null);
+  function track(event) {
+    if (keys.includes(event.key)) {
+      down[event.key] = event.type == "keydown";
+      event.preventDefault();
+    }
+  }
+  // console.log(down);
+  window.addEventListener("keydown", track);
+  window.addEventListener("keyup", track);
+  return down;
+}
+
+const arrowKeys = trackKeys(["ArrowLeft", "ArrowRight", "ArrowUp"]);
+function runAnimation(frameFunc) {
+  let lastTime = null;
+  function frame(time) {
+    if (lastTime != null) {
+      // console.log(arrowKeys);
+
+      let timeStep = Math.min(time - lastTime, 100) / 1000;
+      if (frameFunc(timeStep) === false) return;
+    }
+    lastTime = time;
+    requestAnimationFrame(frame);
+  }
+  requestAnimationFrame(frame);
+}
+function runLevel(level, Display) {
+  let display = new Display(document.body, level);
+  let state = State.start(level);
+  let ending = 1;
+  return new Promise((resolve) => {
+    runAnimation((time) => {
+      state = state.update(time, arrowKeys);
+      display.syncState(state);
+      if (state.status == "playing") {
+        return true;
+      } else if (ending > 0) {
+        ending -= time;
+        return true;
+      } else {
+        display.clear();
+        resolve(state.status);
+        return false;
+      }
+    });
+  });
+}
+async function runGame(plans, Display) {
+  let lives = 3;
+  for (let level = 0; level < plans.length && lives > 0; ) {
+    let status = await runLevel(new Level(plans[level]), Display);
+    if (status == "won") level++;
+    else lives--;
+  }
+  if (lives > 0) {
+    console.log("You've won!");
+  } else {
+    console.log("Game over");
+  }
+}
+runGame(GAME_LEVELS, DOMDisplay);

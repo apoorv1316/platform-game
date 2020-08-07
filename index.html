@@ -13,7 +13,8 @@
     <button data-toggle-fullscreen>Toggle Fullscreen</button>
     <audio id="audio" src="./audio.mp3"></audio>
   </body>
-  <script src="game.js"></script>
+  <script defer src="gamelevel.js"></script>
+  <script defer src="game.js"></script>
 
   <script>
     var audio = document.getElementById("audio");
@@ -27,7 +28,7 @@
       audio.muted = false;
     }
 
-    let display = new DOMDisplay(document.body, simpleLevel);
-    display.syncState(State.start(simpleLevel));
+    // let display = new DOMDisplay(document.body, simpleLevel);
+    // display.syncState(State.start(simpleLevel));
   </script>
 </html>
