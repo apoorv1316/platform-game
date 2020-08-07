@@ -27,6 +27,7 @@ class Level {
         // Background elements are strings
         if (typeof type == "string") return type;
         // Moving elements are classes
+        // Actor classes have a static create method that is used by the Level constructor to create an actor from a character in the level plan
         this.startActors.push(type.create(new Vec(x, y), ch));
         return "empty";
       });
@@ -161,7 +162,7 @@ class DOMDisplay {
 // Gives the no. of pixels that a single unit takes up on the screen
 
 const scale = 20;
-
+// The background is drawn as <table> element. Each row of the grid is turned into a <tr> element. The string in the grid are used as class names for the table cell (<td>) elements. The spread operator is used to pass array of child nodes to elt as seperate arguments.
 function drawGrid(level) {
   return elt(
     "table",
@@ -192,6 +193,8 @@ function drawActors(actors) {
     })
   );
 }
+// The syncState method is used to make the display show a given state. It first removes the old actor graphics, if any, and then redraws the actors in their new positions.
+
 DOMDisplay.prototype.syncState = function (state) {
   if (this.actorLayer) this.actorLayer.remove();
   this.actorLayer = drawActors(state.actors);
@@ -241,3 +244,58 @@ document.addEventListener(
   },
   false
 );
+
+// Motion and Collision
+
+Level.prototype.touches = function (pos, size, type) {
+  var xStart = Math.floor(pos.x);
+  var xEnd = Math.ceil(pos.x + size.x);
+  var yStart = Math.floor(pos.y);
+  var yEnd = Math.ceil(pos.y + size.y);
+
+  for (var y = yStart; y < yEnd; y++) {
+    for (var x = xStart; x < xEnd; x++) {
+      let isOutside = x < 0 || x >= this.width || y < 0 || y >= this.height;
+      let here = isOutside ? "wall" : this.rows[y][x];
+      if (here == type) return true;
+    }
+  }
+  return false;
+};
+
+State.prototype.update = function (time, keys) {
+  let actors = this.actors.map((actor) => actor.update(time, this, keys));
+  let newState = new State(this.level, actors, this.status);
+
+  if (newState.status != "playing") return newState;
+
+  let player = newState.player;
+  if (this.level.touches(player.pos, player.size, "lava")) {
+    return new State(this.level, actors, "lost");
+  }
+
+  for (let actor of actors) {
+    if (actor != player && overlap(actor, player)) {
+      newState = actor.collide(newState);
+    }
+  }
+  return newState;
+};
+function overlap(actor1, actor2) {
+  return (
+    actor1.pos.x + actor1.size.x > actor2.pos.x &&
+    actor1.pos.x < actor2.pos.x + actor2.size.x &&
+    actor1.pos.y + actor1.size.y > actor2.pos.y &&
+    actor1.pos.y < actor2.pos.y + actor2.size.y
+  );
+}
+Lava.prototype.collide = function (state) {
+  return new State(state.level, state.actors, "lost");
+};
+
+Coin.prototype.collide = function (state) {
+  let filtered = state.actors.filter((a) => a != this);
+  let status = state.status;
+  if (!filtered.some((a) => a.type == "coin")) status = "won";
+  return new State(state.level, filtered, status);
+};
