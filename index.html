@@ -7,14 +7,27 @@
     <link rel="stylesheet" href="index.css" />
   </head>
   <body>
-    <input type="button" value="PLAY" onclick="play()" />
-    <input type="button" value="MUTE" onclick="mute()" />
-    <input type="button" value="Enable music" onclick="unmute()" />
-    <button data-toggle-fullscreen>Toggle Fullscreen</button>
+    <!-- <input type="button" class="button play" onclick="play()" /> -->
+    <!-- <input type="button" value="MUTE" /> -->
+    <div class="icons">
+      <i class="fas fa-music" onclick="play()"></i>
+      <i class="fas fa-volume-mute" onclick="mute()"></i>
+      <i class="fas fa-volume-up" onclick="unmute()"></i>
+    </div>
+
+    <!-- <input type="button" value="Enable music" onclick="unmute()" /> -->
+    <!-- <button data-toggle-fullscreen>Toggle Fullscreen</button> -->
+    <p id="lives"></p>
+    <h2 id="over"></h2>
     <audio id="audio" src="./audio.mp3"></audio>
   </body>
   <script defer src="gamelevel.js"></script>
   <script defer src="game.js"></script>
+  <script
+    defer
+    src="https://kit.fontawesome.com/99707f66b8.js"
+    crossorigin="anonymous"
+  ></script>
 
   <script>
     var audio = document.getElementById("audio");

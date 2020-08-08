@@ -24,6 +24,7 @@ class Level {
     this.rows = rows.map((row, y) => {
       return row.map((ch, x) => {
         let type = levelChars[ch];
+        // console.log(type);
         // Background elements are strings
         if (typeof type == "string") return type;
         // Moving elements are classes
@@ -405,16 +406,26 @@ function runLevel(level, Display) {
   });
 }
 async function runGame(plans, Display) {
-  let lives = 3;
+  var lives = 3;
+  let p = document.getElementById("lives");
+  if (!p.innerHTML) p.innerHTML = `Lives remaining ${lives}`;
+
+  console.log(lives, "loop");
   for (let level = 0; level < plans.length && lives > 0; ) {
     let status = await runLevel(new Level(plans[level]), Display);
     if (status == "won") level++;
     else lives--;
+    p.innerHTML = `Lives remaining ${lives}`;
+    // console.log(lives, "loop");
   }
+
   if (lives > 0) {
     console.log("You've won!");
   } else {
+    let h2 = document.getElementById("over");
+    h2.innerHTML = "GAME OVER";
     console.log("Game over");
   }
 }
+console.log(lives);
 runGame(GAME_LEVELS, DOMDisplay);

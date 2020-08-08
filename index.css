@@ -2,6 +2,7 @@
   background: rgb(52, 166, 251);
   table-layout: fixed;
   border-spacing: 0;
+  /* margin-bottom: -50px; */
 }
 .background td {
   padding: 0;
@@ -35,4 +36,37 @@
 }
 :fullscreen {
   background-color: red;
+}
+
+#lives {
+  position: absolute;
+  z-index: 100;
+  top: 30px;
+  right: 50px;
+  background: red;
+}
+
+/* .button.play {
+  width: 32px;
+  height: 32px;
+
+  border-color: red blue green yellow;
+  box-sizing: border-box;
+  border-width: 20px;
+  border-color: transparent transparent transparent #202020;
+} */
+.icons {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 20px;
+}
+.fas {
+  margin-left: 32px;
+  width: 50px;
+  height: 50px;
+  /* margin-bottom: -20px; */
+}
+#over {
+  text-align: center;
 }
